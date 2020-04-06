@@ -3,10 +3,16 @@
 #include "stm32f446xx.h"
 #include "../../gpio.h"
 
+uint16_t u16_sat2(uint16_t val, uint16_t min, uint16_t max) {
+    uint16_t b = val>max ? max : val;
+    b = b<min ? min : b;
+    return b;
+}
+
 void PWM_EN::set_voltage(float v_abc[3]) {
-    pwm_a_ = v_abc[0] * v_to_pwm_ + half_period_;
-    pwm_b_ = v_abc[1] * v_to_pwm_ + half_period_;
-    pwm_c_ = v_abc[2] * v_to_pwm_ + half_period_;
+    pwm_a_ = u16_sat2(v_abc[0] * v_to_pwm_ + half_period_, pwm_min_, pwm_max_);
+    pwm_b_ = u16_sat2(v_abc[1] * v_to_pwm_ + half_period_, pwm_min_, pwm_max_);
+    pwm_c_ = u16_sat2(v_abc[2] * v_to_pwm_ + half_period_, pwm_min_, pwm_max_);
 }
 
 void PWM_EN::set_vbus(float vbus) {
@@ -30,7 +36,13 @@ void PWM_EN::voltage_mode() {
 }
 
 void PWM_EN::set_frequency_hz(uint32_t frequency_hz) {
-    regs_.ARR = 180e6/2/frequency_hz; // todo not enabled at startup
-    period_ = 180e6/2/frequency_hz;
+    regs_.ARR = CPU_FREQUENCY_HZ/2/frequency_hz; // todo not enabled at startup
+    period_ = CPU_FREQUENCY_HZ/2/frequency_hz;
     half_period_ = period_/2; 
+}
+
+void PWM_EN::set_pwm_min(float pwm_min_off_ns) {
+    float ns_per_count = 2*1.0e9/CPU_FREQUENCY_HZ;
+    pwm_min_ = pwm_min_off_ns / ns_per_count;
+    pwm_max_ = period_ - pwm_min_;
 }
