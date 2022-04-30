@@ -123,6 +123,8 @@ class FastLoop {
 
       if (mode_ == PHASE_LOCK_MODE) {
          motor_electrical_zero_pos_ = encoder_.get_value();
+         measured_index_electrical_offset_pos_ = ((encoder_.get_value() - encoder_.get_index_pos()) %  
+                                                  param_.motor_encoder.cpr) / param_.num_poles; 
       }
 
       v_bus_ = *v_bus_dr_*param_.vbus_gain;
