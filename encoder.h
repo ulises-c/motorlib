@@ -1,5 +1,4 @@
 #pragma once
-#include "sensor.h"
 
 // Base class for encoders, which by default are used as position sensors for both
 // a motor encoder and an output encoder. An encoder should be periodically polled by a
@@ -14,7 +13,7 @@
 // an absolute encoder, but additonal reads should be incrementally accurate. The index_received()
 // function is used to indicate precense of an index pulse received for an incremental encoder.
 // It should be set to always true for an absolute encoder.
-class EncoderBase : public SensorBase {
+class EncoderBase {
  public:
     EncoderBase() { }
 
@@ -46,4 +45,6 @@ class EncoderBase : public SensorBase {
     // pulse and a received index pulse. For an absolute encoder this could return any
     // useful error check information.
     int32_t index_error(int32_t cpr) { return 0; }
+
+    bool error() { return false; }
 };

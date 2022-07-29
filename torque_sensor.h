@@ -1,7 +1,7 @@
 #pragma once
 #include "messages.h"
 
-class TorqueSensorBase : public SensorBase {
+class TorqueSensorBase {
  public:
     void init() {}
     void trigger() {}

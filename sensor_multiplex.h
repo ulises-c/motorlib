@@ -1,22 +1,21 @@
 #pragma once
-
-#include "sensor.h"
 #include "torque_sensor.h"
-
 
 // alternates reads between two sensors. Calling SensorMultiplex functions alternate between 
 // triggering the primary and secondary reads. It returns the primary sensor values
 // Using secondary() returns a SecondarySensor functions only returns values
 template<class Sensor1, class Sensor2>
-class SensorMultiplex : public SensorBase {
+class SensorMultiplex {
  public:
-    class SecondarySensor : public SensorBase {
+    class SecondarySensor {
      public:
         SecondarySensor(Sensor2 *secondary) : secondary_(secondary) {}
         int32_t get_value() const { return secondary_->get_value(); }
         int32_t read() { return get_value(); }
+        void trigger() {}
         bool init() { return secondary_->init(); }
         bool index_received() const { return secondary_->index_received(); }
+        bool error() { return secondary_->error(); }
      private:
         Sensor2 *secondary_;
     };
@@ -44,6 +43,7 @@ class SensorMultiplex : public SensorBase {
     int32_t get_index_pos() const { return primary_.get_index_pos(); }
     bool index_received() const { return primary_.index_received(); }
     bool init() { return primary_.init(); }
+    bool error() { return primary_.error(); }
 
  protected:
     Sensor1 &primary_;
