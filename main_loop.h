@@ -255,6 +255,9 @@ class MainLoop {
         param_.encoder_limits.output_hard_max = INFINITY;
         param_.encoder_limits.output_hard_min = -INFINITY;
       }
+      if (param.output_encoder.direction == -1) {
+        param_.output_encoder.cpr -= 1;
+      }
     }
     void set_rollover(float rollover) {
       position_controller_.set_rollover(rollover);

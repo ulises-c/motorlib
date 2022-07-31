@@ -117,7 +117,7 @@ class FastLoop {
          if (param_.motor_encoder.use_index_electrical_offset_pos) {
             // motor_index_electrical_offset_pos is the value of an electrical zero minus the index position
             // motor_electrical_zero_pos is the offset to the initial encoder value
-            motor_electrical_zero_pos_ = param_.motor_encoder.index_electrical_offset_pos + motor_index_pos_;
+            motor_electrical_zero_pos_ = param_.motor_encoder.index_electrical_offset_pos + motor_index_pos_ + current_direction_offset_;
          }
          motor_index_pos_set_ = true;
       }           
@@ -129,6 +129,7 @@ class FastLoop {
            motor_index_electrical_offset_measured_ = (motor_electrical_zero_pos_ - motor_index_pos_ + param_.motor_encoder.cpr) % 
               (param_.motor_encoder.cpr/(uint8_t) param_.foc_param.num_poles);
         }
+        motor_electrical_zero_pos_ += current_direction_offset_;
       }
 
       v_bus_ = *v_bus_dr_*param_.vbus_gain;
@@ -197,6 +198,9 @@ class FastLoop {
       foc_->set_param(param_.foc_param);
       set_phase_mode();
       inv_motor_encoder_cpr_ = param_.motor_encoder.cpr != 0 ? 1.f/param_.motor_encoder.cpr : 0;
+      if (param_.current_direction == -1) {
+        current_direction_offset_ = 0.5*param_.motor_encoder.cpr/param_.foc_param.num_poles;
+      }
     }
     const FastLoopStatus &get_status() const {
       return status_.top();
@@ -259,6 +263,7 @@ class FastLoop {
     int32_t motor_electrical_zero_pos_;
     float motor_index_electrical_offset_measured_ = NAN;
     float inv_motor_encoder_cpr_;
+    int32_t current_direction_offset_ = 0;
     int32_t frequency_hz_ = 100000;
     volatile float ia_bias_ = 0;
     volatile float ib_bias_ = 0;

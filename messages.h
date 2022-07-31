@@ -43,6 +43,7 @@ typedef struct {
     float adc1_gain, adc2_gain, adc3_gain;          // current sensor linear gain units A/count
     FOCParam foc_param;
     uint8_t phase_mode;     // two possible motor wiring states: 0: standard, 1: reverse (i.e. two motor leads flipped)
+    float current_direction; // 0 or 1 for positive, -1 for negative
     struct {
         float index_electrical_offset_pos;          // index offset electrial zero in encoder counts
                                                     // can obtain this value from  motor_index_pos_ - motor_electrical_zero_pos_ 
@@ -108,6 +109,7 @@ typedef struct {
         float table[OUTPUT_ENCODER_TABLE_LENGTH][4];
         float cpr;                                  // output encoder cpr \sa FastLoopParam.motor_encoder.cpr
         float bias;
+        float direction;                            // 0 or 1 for positive, -1 for negative
     } output_encoder;
     struct {
         float motor_hard_max;         // will switch to safe mode if going past these limits
