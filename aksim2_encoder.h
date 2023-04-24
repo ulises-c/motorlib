@@ -6,6 +6,9 @@
 
 uint8_t CRC_BiSS_43_24bit(uint32_t w_InputData);
 
+#include "peripheral/stm32g4/pin_config.h"
+#define GPIO_OUT (reinterpret_cast<volatile gpio_bits*>(&GPIOA->ODR)->bit1)
+
 template<uint8_t nbits_>
 class Aksim2Encoder : public EncoderBase {
  public:
@@ -50,6 +53,7 @@ class Aksim2Encoder : public EncoderBase {
             diag_warn_count_++;
         }
         if (!diag_.crc6) {
+            GPIO_OUT ^= 1;
             crc_error_raw_latch_ = raw_value_;
             crc_err_count_++;
         }
