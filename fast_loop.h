@@ -48,9 +48,9 @@ class FastLoop {
       adc1 = *i_a_dr_;
       adc2 = *i_b_dr_;
       adc3 = *i_c_dr_;
-      foc_command_.measured.i_a = param_.adc1_gain*(adc1-2048) - ia_bias_;
-      foc_command_.measured.i_b = param_.adc2_gain*(adc2-2048) - ib_bias_;
-      foc_command_.measured.i_c = param_.adc3_gain*(adc3-2048) - ic_bias_;
+      foc_command_.measured.i_a = param_.adc1_gain*(adc1-2048) - ia_bias_ + ia0_bias_;
+      foc_command_.measured.i_b = param_.adc2_gain*(adc2-2048) - ib_bias_ + ib0_bias_;
+      foc_command_.measured.i_c = param_.adc3_gain*(adc3-2048) - ic_bias_ + ic0_bias_;
       
       // get encoder value, may wait a little
       motor_enc = encoder_.read();
@@ -121,7 +121,13 @@ class FastLoop {
         } else {
           zero_current_sensors();
         }
-
+      }
+      if (zero_current_sensor_bias_) {
+        if ((int32_t) (get_clock()-zero_current_sensor_bias_end_) > 0) {
+          zero_current_sensor_bias_ = false;
+        } else {
+          zero_current_sensor_bias();
+        }
       }
       store_status();
 #ifdef END_TRIGGER_MOTOR_ENCODER
@@ -224,6 +230,9 @@ class FastLoop {
       ia_bias_ = param_.ia_bias;
       ib_bias_ = param_.ib_bias;
       ic_bias_ = param_.ic_bias;
+      ia0_bias_ = param_.ia0_bias;
+      ib0_bias_ = param_.ib0_bias;
+      ic0_bias_ = param_.ic0_bias;
     }
     const FastLoopStatus &get_status() const {
       return status_.top();
@@ -249,6 +258,12 @@ class FastLoop {
       ia_bias_ = (1-alpha_zero_)*ia_bias_ + alpha_zero_* param_.adc1_gain*(adc1-2048);
       ib_bias_ = (1-alpha_zero_)*ib_bias_ + alpha_zero_* param_.adc2_gain*(adc2-2048);
       ic_bias_ = (1-alpha_zero_)*ic_bias_ + alpha_zero_* param_.adc3_gain*(adc3-2048);
+    }
+
+    void zero_current_sensor_bias() {
+      ia0_bias_ = (1-alpha_zero_)*ia0_bias_ + alpha_zero_* param_.adc1_gain*(adc1-2048) - ia_bias_;
+      ib0_bias_ = (1-alpha_zero_)*ib0_bias_ + alpha_zero_* param_.adc2_gain*(adc2-2048) - ib_bias_;
+      ic0_bias_ = (1-alpha_zero_)*ic0_bias_ + alpha_zero_* param_.adc3_gain*(adc3-2048) - ic_bias_;
     }
 
     void zero_current_sensors(uint16_t adc1_0, uint16_t adc2_0, uint16_t adc3_0) {
@@ -286,6 +301,13 @@ class FastLoop {
     void zero_current_sensors_off() {
       zero_current_sensors_ = false;
     }
+    void zero_current_sensor_bias_on(float t_seconds = 1) {
+      zero_current_sensor_bias_ = true;
+      zero_current_sensor_bias_end_ = get_clock() + t_seconds*CPU_FREQUENCY_HZ;
+    }
+    void zero_current_sensor_bias_off() {
+      zero_current_sensor_bias_ = false;
+    }
     bool motor_encoder_error() { return encoder_.error(); }
     void trigger_status_log() {
       status_log_.copy(status_);
@@ -311,6 +333,7 @@ class FastLoop {
     int32_t motor_mechanical_position_ = 0;
 
     float ia_bias_, ib_bias_, ic_bias_;
+    float ia0_bias_, ib0_bias_, ic0_bias_;
 
     float iq_des = 0;
     float id_des = 0;
@@ -354,6 +377,8 @@ class FastLoop {
    uint32_t beep_end_ = 0;
    bool zero_current_sensors_ = false;
    uint32_t zero_current_sensors_end_ = 0;
+   bool zero_current_sensor_bias_ = false;
+   uint32_t zero_current_sensor_bias_end_ = 0;
    float phi_beep_ = 0;
    uint32_t energy_uJ_ = 0;
 

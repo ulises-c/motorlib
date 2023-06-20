@@ -143,6 +143,7 @@ class System {
             return "ok"; }));
         api.add_api_variable("beep", new APICallbackFloat([](){ return 0; }, [](float f){ actuator_.fast_loop_.beep_on(f); }));
         api.add_api_variable("zero_current_sensors", new APICallbackFloat([](){ return 0; }, [](float f){ actuator_.fast_loop_.zero_current_sensors_on(f); }));
+        api.add_api_variable("zero_current_sensor_bias", new APICallbackFloat([](){ return 0; }, [](float f){ actuator_.fast_loop_.zero_current_sensor_bias_on(f); }));
         api.add_api_variable("disable_safe_mode", new const APICallback([](){ actuator_.main_loop_.error_mask_.all = ERROR_MASK_NONE; return "ok"; }));
         api.add_api_variable("error_mask", new APICallback([](){ return u32_to_hex(actuator_.main_loop_.error_mask_.all); },
                 [](std::string s){ try {

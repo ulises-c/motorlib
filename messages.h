@@ -47,6 +47,7 @@ typedef struct {
 
 typedef struct {
     float ia_bias, ib_bias, ic_bias;                // initial guess at current sensor bias in amps
+    float ia0_bias, ib0_bias, ic0_bias;             // additional current sensor bias in amps
     float adc1_gain, adc2_gain, adc3_gain;          // current sensor linear gain units A/count
     FOCParam foc_param;
     uint8_t phase_mode;     // two possible motor wiring states: 0: standard, 1: reverse (i.e. two motor leads flipped)
