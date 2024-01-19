@@ -9,14 +9,14 @@ extern "C"
 
 void DMA2_Channel1_IRQHandler(void)
 {
-  SPI_DEBUG_PIN1_SET();
+  DEBUG_PIN1_SET();
 
   if(SpiSlave::instance != NULL)
   {
     SpiSlave::instance->rxInterruptHandler();
   }
 
-  SPI_DEBUG_PIN1_CLEAR();
+  DEBUG_PIN1_CLEAR();
 }
 
 void DMA2_Channel2_IRQHandler(void)
@@ -163,7 +163,7 @@ void SpiSlave::reset()
 void SpiSlave::startTransaction(BufferDescriptor descriptor)
 {
   volatile uint32_t temp;
-  SPI_DEBUG_PIN2_SET();
+  DEBUG_PIN2_SET();
 
   transaction_counter_++;
 
@@ -211,7 +211,12 @@ void SpiSlave::startTransaction(BufferDescriptor descriptor)
   init_struct_.rxDmaChannel->CCR |= DMA_CCR_EN;
   init_struct_.txDmaChannel->CCR |= DMA_CCR_EN;
 
-  SPI_DEBUG_PIN2_CLEAR();
+  DEBUG_PIN2_CLEAR();
+}
+
+void SpiSlave::abortTransaction()
+{
+
 }
 
 void SpiSlave::rxInterruptHandler()
@@ -242,10 +247,15 @@ void SpiSlave::txInterruptHandler()
   }
 }
 
-void SpiSlave::setTransactionCompletedCallback(transactionCompleteCallback callback, void* param)
+void SpiSlave::setTransactionCompletedCallback(commsCallback callback, void* param)
 {
   transaction_completed_callback_ = callback;
   transaction_completed_callback_param_ = param;
+}
+
+void SpiSlave::setErrorCallback(commsCallback callback, void* param)
+{
+  // SPI Slave doesn't support error callbacks
 }
 
 void SpiSlave::resetTransactionCounter()
@@ -262,7 +272,7 @@ void SpiSlave::init()
 {
   FIGURE_ASSERT(is_initialized_ == false, "Already initialized");
 
-  SPI_DEBUG_PINS_INIT();
+  DEBUG_PINS_INIT();
 
   initClock();
   initGpio();
